@@ -1,0 +1,11 @@
+#!/bin/sh -e
+
+VENV_DIR=.qe-c-backlog-assistant_venv
+
+python3.11 -m venv ${VENV_DIR}
+
+. ${VENV_DIR}/bin/activate
+
+pip install --upgrade pip
+
+pip install -r requirements.txt
