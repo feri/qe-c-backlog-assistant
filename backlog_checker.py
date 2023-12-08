@@ -10,9 +10,12 @@ import math
 result_icons = {"pass": "&#x1F49A;", "fail": "&#x1F534;", "review": "&#x1f448;"}
 # Links for various backlog queries to be used in the md file
 query_links = {}
+# Default query file
+queries = 'queries.txt'
 
 def initialize_queries():
-    with open("queries.txt", "r") as qr:
+    query_file = byDefaultEnv('queries', queries)
+    with open(query_file, "r") as qr:
         for q in qr.readlines():
             k, v = q.split("|", 1)
             # print(k)
@@ -65,12 +68,12 @@ def table_results_to_md_adv(values):
 
 def query_base(query):
     key = os.environ['key']
-    answer = requests.get(
-        f"{query_links[query].replace('issues', 'issues.json')}"
-        + f"&key={key}")
+    req = f"{query_links[query].replace('issues', 'issues.json')}" + f"&key={key}"
+    answer = requests.get(req)
     return json.loads(answer.content)
 
 def query_count(query):
+    print('query:', query)
     root = query_base(query)
     return int(root["total_count"])
 
@@ -176,7 +179,7 @@ def table_comp_results_to_md_withoutStatusColumn(a, b, c, d):
 
 def gha_check():
     initialize_queries()
-    
+
     query = os.environ['query']
     max_level = int(os.getenv('max_level', default = 0))
 
@@ -185,12 +188,12 @@ def gha_check():
 
     gha_table([
         {
-            "header": "Backlog Query",            
+            "header": "Backlog Query",
             "text": query,
             "link": query_links[query]
         },
         {
-            "header": "Number of issues",            
+            "header": "Number of issues",
             "text": str(issue_count)
         },
         {
@@ -332,12 +335,12 @@ def gha_aging():
     adv = sum / count
     if len(values) > 0:
         median = values[round(len(values)/2)]
-    
+
     std_deviation = 0
     for v in values:
         std_deviation = std_deviation = (v - adv) * (v - adv)
     std_deviation = math.sqrt(std_deviation) / count
-    
+
     gha_table([
         {
             "header": "Backlog Query",
